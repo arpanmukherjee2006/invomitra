@@ -57,7 +57,7 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       }
 
       if (data?.url) {
-        // Open Stripe checkout in a new tab
+        // Open Razorpay checkout in a new tab
         window.open(data.url, '_blank');
         onClose();
       } else {
@@ -184,7 +184,7 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
               </div>
               <h4 className="font-semibold text-sm mb-1">Easy Payments</h4>
               <p className="text-xs text-muted-foreground">
-                Secure payments via Stripe
+                Secure payments via Razorpay
               </p>
             </div>
           </div>
