@@ -64,7 +64,7 @@ const TermsAndConditions = () => {
                     </p>
                   </div>
                   <div className="space-y-3 text-muted-foreground">
-                    <p><strong>Payment Processing:</strong> Payments are processed through secure third-party payment processors. By making a payment, you authorize us to charge your selected payment method.</p>
+                    <p><strong>Payment Processing:</strong> Payments are processed through Razorpay, a secure third-party payment processor. By making a payment, you authorize us to charge your selected payment method.</p>
                     <p><strong>Subscription Fees:</strong> Subscription fees are billed in advance and are non-refundable. Your subscription will automatically renew unless cancelled before the renewal date.</p>
                     <p><strong>Price Changes:</strong> We reserve the right to modify our pricing at any time. Price changes will not affect your current billing cycle.</p>
                     <p><strong>Failed Payments:</strong> If payment fails, your access to premium features may be suspended until payment is resolved.</p>

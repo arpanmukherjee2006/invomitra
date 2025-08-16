@@ -56,18 +56,56 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
         throw error;
       }
 
-      if (data?.url) {
-        // Open Razorpay checkout in a new tab
-        window.open(data.url, '_blank');
-        onClose();
+      if (data?.orderId && data?.keyId) {
+        // Load Razorpay script if not already loaded
+        if (!window.Razorpay) {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => initializeRazorpay(data);
+          document.body.appendChild(script);
+        } else {
+          initializeRazorpay(data);
+        }
       } else {
-        throw new Error('No checkout URL returned');
+        throw new Error('No order data returned from Razorpay');
       }
     } catch (error) {
       console.error('Subscription error:', error);
-    } finally {
       setLoading(false);
     }
+  };
+
+  const initializeRazorpay = (orderData: any) => {
+    const options = {
+      key: orderData.keyId,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: 'InvoMitra',
+      description: `Pro Plan - ${orderData.planType === 'yearly' ? 'Yearly' : 'Monthly'}`,
+      order_id: orderData.orderId,
+      prefill: {
+        email: orderData.userEmail,
+      },
+      theme: {
+        color: '#3B82F6'
+      },
+      handler: function(response: any) {
+        console.log('Payment successful:', response);
+        // Handle successful payment
+        navigate('/dashboard?success=true');
+        onClose();
+        setLoading(false);
+      },
+      modal: {
+        ondismiss: function() {
+          console.log('Payment dismissed');
+          setLoading(false);
+        }
+      }
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
   };
 
   const features = [

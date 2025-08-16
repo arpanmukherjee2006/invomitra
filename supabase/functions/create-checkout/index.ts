@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -26,45 +25,57 @@ serve(async (req) => {
 
     const { priceType } = await req.json();
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2023-10-16" 
-    });
-
-    // Check if customer already exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
+    const razorpayKeyId = Deno.env.get("RAZORPAY_KEY_ID") || "";
+    const razorpayKeySecret = Deno.env.get("RAZORPAY_KEY_SECRET") || "";
+    
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      throw new Error("Razorpay credentials not configured");
     }
 
-    // Determine price based on priceType
-    const priceData = priceType === 'yearly' 
-      ? { unit_amount: 99900, interval: 'year' as const } // ₹999 yearly
-      : { unit_amount: 9900, interval: 'month' as const }; // ₹99 monthly
+    // Determine price based on priceType (in paise for Razorpay)
+    const amount = priceType === 'yearly' ? 99900 : 9900; // ₹999 or ₹99 in paise
+    const currency = "INR";
+    
+    // Create Razorpay order
+    const orderData = {
+      amount: amount, // amount in paise
+      currency: currency,
+      receipt: `receipt_${Date.now()}`,
+      notes: {
+        user_id: user.id,
+        user_email: user.email,
+        plan_type: priceType,
+        product: "Pro Plan"
+      }
+    };
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price_data: {
-            currency: "inr",
-            product_data: { 
-              name: `Pro Plan - ${priceType === 'yearly' ? 'Yearly' : 'Monthly'}`,
-              description: "Invoice management with unlimited features"
-            },
-            unit_amount: priceData.unit_amount,
-            recurring: { interval: priceData.interval },
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${req.headers.get("origin")}/dashboard?success=true`,
-      cancel_url: `${req.headers.get("origin")}/dashboard?canceled=true`,
+    const auth = btoa(`${razorpayKeyId}:${razorpayKeySecret}`);
+    
+    const razorpayResponse = await fetch("https://api.razorpay.com/v1/orders", {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${auth}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(orderData)
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    if (!razorpayResponse.ok) {
+      const errorData = await razorpayResponse.text();
+      throw new Error(`Razorpay API error: ${errorData}`);
+    }
+
+    const order = await razorpayResponse.json();
+
+    // Return order details for frontend Razorpay integration
+    return new Response(JSON.stringify({ 
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: razorpayKeyId,
+      planType: priceType,
+      userEmail: user.email
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
