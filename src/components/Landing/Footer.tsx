@@ -38,9 +38,17 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-semibold">Support</h4>
             <div className="space-y-2 text-sm">
-             
               <Link to="/terms" className="block text-muted-foreground hover:text-primary transition-colors">
                 Terms & Conditions
+              </Link>
+              <Link to="/privacy-policy" className="block text-muted-foreground hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/cancellation-refunds" className="block text-muted-foreground hover:text-primary transition-colors">
+                Cancellation & Refunds
+              </Link>
+              <Link to="/contact-us" className="block text-muted-foreground hover:text-primary transition-colors">
+                Contact Us
               </Link>
             </div>
           </div>
