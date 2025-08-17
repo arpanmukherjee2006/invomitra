@@ -156,7 +156,7 @@ const TermsAndConditions = () => {
                     If you have any questions about these Terms and Conditions, please contact us at:
                   </p>
                   <div className="mt-3 text-muted-foreground">
-                    <p>Email:invomitra@gmail.com</p>
+                    <p>Email: invomitra@gmail.com</p>
                   </div>
                 </section>
 
