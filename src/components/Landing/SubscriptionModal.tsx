@@ -185,39 +185,50 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       }
     } catch (error) {
       console.error('Subscription error:', error);
-      toast.error('An unexpected error occurred', {
-        description: 'Please try again.'
-      });
-          // Redirect to auth page after a short delay
-          setTimeout(() => {
-            navigate('/auth');
-            onClose();
-          }, 2000);
-        } else if (error.message?.includes('Razorpay credentials not configured')) {
-          errorTitle = 'Payment System Not Configured';
-          errorMessage = 'The payment system is not properly configured. Please contact support with error code: RZP-ENV-MISSING.';
-          console.error('Razorpay credentials missing in environment variables');
-        } else if (error.message?.includes('Razorpay API error')) {
-          errorTitle = 'Payment Gateway Error';
-          errorMessage = 'The payment gateway returned an error. Please try again later or contact support with error code: RZP-API-ERROR.';
-          console.error('Razorpay API error:', error.message);
-        } else if (error.message?.includes('Invalid or missing priceType')) {
-          errorTitle = 'Invalid Plan';
-          errorMessage = 'Invalid subscription plan selected. Please try again.';
-        } else if (error.message?.includes('Network Error') || error.message?.includes('Failed to fetch')) {
-          errorTitle = 'Network Error';
-          errorMessage = 'Please check your internet connection and try again.';
-        }
+      let errorTitle = 'An unexpected error occurred';
+      let errorMessage = 'Please try again.';
+      
+      if (error.message?.includes('Authentication failed')) {
+        errorTitle = 'Session Expired';
+        errorMessage = 'Your session has expired. Please log in again and try subscribing.';
         
-        toast({
-          title: errorTitle,
-          description: errorMessage,
-          variant: "destructive"
+        toast.error(errorTitle, {
+          description: errorMessage
         });
         
-        setLoading(false);
-        setLoadingState('idle');
-        return;
+        // Redirect to auth page after a short delay
+        setTimeout(() => {
+          navigate('/auth');
+          onClose();
+        }, 2000);
+      } else if (error.message?.includes('Razorpay credentials not configured')) {
+        errorTitle = 'Payment System Not Configured';
+        errorMessage = 'The payment system is not properly configured. Please contact support with error code: RZP-ENV-MISSING.';
+        console.error('Razorpay credentials missing in environment variables');
+        toast.error(errorTitle, {
+          description: errorMessage
+        });
+      } else if (error.message?.includes('Razorpay API error')) {
+        errorTitle = 'Payment Gateway Error';
+        errorMessage = 'The payment gateway returned an error. Please try again later or contact support with error code: RZP-API-ERROR.';
+        console.error('Razorpay API error:', error.message);
+      } else if (error.message?.includes('Invalid or missing priceType')) {
+        errorTitle = 'Invalid Plan';
+        errorMessage = 'Invalid subscription plan selected. Please try again.';
+      } else if (error.message?.includes('Network Error') || error.message?.includes('Failed to fetch')) {
+        errorTitle = 'Network Error';
+        errorMessage = 'Please check your internet connection and try again.';
+      }
+      
+      toast({
+        title: errorTitle,
+        description: errorMessage,
+        variant: "destructive"
+      });
+      
+      setLoading(false);
+      setLoadingState('idle');
+      return;
       }
 
       if (!data?.orderId || !data?.keyId) {
