@@ -7,12 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-<<<<<<< Updated upstream
-import { toast } from 'sonner';
-=======
 import { useToast } from '@/hooks/use-toast';
 import PaymentErrorHandler from './PaymentErrorHandler';
->>>>>>> Stashed changes
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -136,11 +132,7 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceType },
         headers: {
-<<<<<<< Updated upstream
-          Authorization: `Bearer ${refreshedSession.access_token}`,
-=======
           Authorization: `Bearer ${session.access_token}`,
->>>>>>> Stashed changes
         },
       });
 
@@ -148,8 +140,23 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
 
       if (error) {
         console.error('Checkout error:', error);
-<<<<<<< Updated upstream
-        toast.error('Failed to create checkout session. Please try again.');
+        let errorTitle = 'Payment Setup Failed';
+        let errorMessage = 'Please try again later.';
+        
+        if (error.message?.includes('Authentication failed')) {
+          errorTitle = 'Session Expired';
+          errorMessage = 'Your session has expired. Please log in again and try subscribing.';
+          
+          toast.error(errorTitle, {
+            description: errorMessage
+          });
+          setLoading(false);
+          return;
+        }
+        
+        toast.error(errorTitle, {
+          description: errorMessage
+        });
         setLoading(false);
         return;
       }
@@ -161,7 +168,9 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
           script.onload = () => initializeRazorpay(data);
           script.onerror = () => {
-            toast.error('Failed to load payment gateway. Please try again.');
+            toast.error('Failed to load payment gateway', {
+              description: 'Please try again.'
+            });
             setLoading(false);
           };
           document.body.appendChild(script);
@@ -169,19 +178,16 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
           initializeRazorpay(data);
         }
       } else {
-        toast.error('Failed to create payment order. Please try again.');
+        toast.error('Payment Setup Failed', {
+          description: 'Failed to create payment order. Please try again.'
+        });
         setLoading(false);
       }
     } catch (error) {
       console.error('Subscription error:', error);
-      toast.error('An unexpected error occurred. Please try again.');
-=======
-        let errorTitle = 'Payment Setup Failed';
-        let errorMessage = 'Please try again later.';
-        
-        if (error.message?.includes('Authentication failed')) {
-          errorTitle = 'Session Expired';
-          errorMessage = 'Your session has expired. Please log in again and try subscribing.';
+      toast.error('An unexpected error occurred', {
+        description: 'Please try again.'
+      });
           // Redirect to auth page after a short delay
           setTimeout(() => {
             navigate('/auth');
