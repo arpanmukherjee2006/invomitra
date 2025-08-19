@@ -107,7 +107,7 @@ const PricingSection = () => {
                   className="w-full mb-6"
                   onClick={() => setShowSubscriptionModal(true)}
                 >
-                  Subscribe Now
+                  {isYearly ? 'Pay ₹999/year' : 'Pay ₹99/month'}
                 </Button>
                 
                 <div className="space-y-3">
@@ -124,7 +124,7 @@ const PricingSection = () => {
                 
                 <div className="mt-6 pt-6 border-t">
                   <div className="text-xs text-muted-foreground text-center">
-                    Cancel anytime • No setup fees
+                    Secure payment via Razorpay • Cancel anytime • No setup fees
                   </div>
                 </div>
               </CardContent>

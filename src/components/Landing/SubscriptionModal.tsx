@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -48,12 +49,17 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       console.log('Session refreshed, making function call');
       
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceType }
+        body: { priceType },
+        headers: {
+          Authorization: `Bearer ${refreshedSession.access_token}`,
+        },
       });
 
       if (error) {
         console.error('Checkout error:', error);
-        throw error;
+        toast.error('Failed to create checkout session. Please try again.');
+        setLoading(false);
+        return;
       }
 
       if (data?.orderId && data?.keyId) {
@@ -62,20 +68,28 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
           const script = document.createElement('script');
           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
           script.onload = () => initializeRazorpay(data);
+          script.onerror = () => {
+            toast.error('Failed to load payment gateway. Please try again.');
+            setLoading(false);
+          };
           document.body.appendChild(script);
         } else {
           initializeRazorpay(data);
         }
       } else {
-        throw new Error('No order data returned from Razorpay');
+        toast.error('Failed to create payment order. Please try again.');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Subscription error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
       setLoading(false);
     }
   };
 
   const initializeRazorpay = (orderData: any) => {
+    console.log('Initializing Razorpay with order data:', orderData);
+    
     const options = {
       key: orderData.keyId,
       amount: orderData.amount,
@@ -85,27 +99,42 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       order_id: orderData.orderId,
       prefill: {
         email: orderData.userEmail,
+        name: user?.user_metadata?.full_name || '',
       },
       theme: {
         color: '#3B82F6'
       },
       handler: function(response: any) {
         console.log('Payment successful:', response);
-        // Handle successful payment
-        navigate('/dashboard?success=true');
+        toast.success('Payment successful! Welcome to InvoMitra Pro!');
+        // Refresh subscription status
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
         onClose();
         setLoading(false);
       },
       modal: {
         ondismiss: function() {
           console.log('Payment dismissed');
+          toast.info('Payment cancelled');
           setLoading(false);
         }
+      },
+      notes: {
+        user_id: user?.id,
+        plan_type: orderData.planType
       }
     };
 
+    try {
     const razorpay = new window.Razorpay(options);
     razorpay.open();
+    } catch (error) {
+      console.error('Error opening Razorpay:', error);
+      toast.error('Failed to open payment gateway. Please try again.');
+      setLoading(false);
+    }
   };
 
   const features = [
@@ -235,9 +264,9 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
               onClick={() => handleSubscribe(isYearly ? 'yearly' : 'monthly')}
               disabled={loading}
             >
-              {loading ? 'Processing...' : user ? 
-                `Subscribe ${isYearly ? 'Yearly ₹999' : 'Monthly ₹99'}` : 
-                `Sign Up & Subscribe ${isYearly ? 'Yearly' : 'Monthly'}`
+              {loading ? 'Loading Payment...' : user ? 
+                `Pay ${isYearly ? '₹999/year' : '₹99/month'}` : 
+                `Sign Up & Pay ${isYearly ? '₹999/year' : '₹99/month'}`
               }
             </Button>
             
@@ -248,7 +277,7 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
             )}
             
             <div className="text-xs text-center text-muted-foreground">
-              Cancel anytime • No setup fees
+              Secure payment via Razorpay • Cancel anytime • No setup fees
             </div>
           </div>
         </div>

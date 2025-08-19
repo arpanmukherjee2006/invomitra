@@ -31,8 +31,6 @@ const SubscriptionGate = ({ children, feature = "this feature" }: SubscriptionGa
     }
 
     console.log('SubscriptionGate - User subscribed, allowing access');
-    // If subscribed, allow access by clicking
-    return;
   };
 
   if (loading) {
@@ -46,7 +44,7 @@ const SubscriptionGate = ({ children, feature = "this feature" }: SubscriptionGa
   if (!user || !subscribed) {
     return (
       <>
-        <div onClick={handleFeatureAccess} className="cursor-pointer">
+        <div onClick={handleFeatureAccess} className="cursor-pointer inline-block">
           {children}
         </div>
         <SubscriptionModal 

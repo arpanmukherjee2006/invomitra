@@ -33,22 +33,52 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setLoading(true);
       console.log('Checking subscription status...');
       
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      // First check local database for subscription status
+      const { data: localData, error: localError } = await supabase
+        .from('subscribers')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (error) {
-        console.error('Subscription check error:', error);
+      if (localError) {
+        console.error('Local subscription check error:', localError);
         setSubscribed(false);
         setSubscriptionTier(null);
         setSubscriptionEnd(null);
+        setLoading(false);
+        return;
+      }
+
+      // If we have local data, use it
+      if (localData) {
+        const isActive = localData.subscribed && 
+          (!localData.subscription_end || new Date(localData.subscription_end) > new Date());
+        
+        console.log('Local subscription status:', { 
+          subscribed: localData.subscribed, 
+          isActive,
+          subscriptionEnd: localData.subscription_end 
+        });
+        
+        setSubscribed(isActive);
+        setSubscriptionTier(localData.subscription_tier);
+        setSubscriptionEnd(localData.subscription_end);
       } else {
-        console.log('Subscription status:', data);
-        setSubscribed(data.subscribed || false);
-        setSubscriptionTier(data.subscription_tier || null);
-        setSubscriptionEnd(data.subscription_end || null);
+        // No local data, create initial record
+        console.log('No local subscription data, creating initial record');
+        await supabase
+          .from('subscribers')
+          .upsert({
+            user_id: user.id,
+            email: user.email || '',
+            subscribed: false,
+            subscription_tier: null,
+            subscription_end: null,
+          }, { onConflict: 'email' });
+        
+        setSubscribed(false);
+        setSubscriptionTier(null);
+        setSubscriptionEnd(null);
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
@@ -87,12 +117,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     if (user && session) {
       checkSubscription();
       
-      // Auto-refresh subscription status every 30 seconds when user is active
+      // Auto-refresh subscription status every 60 seconds when user is active
       const interval = setInterval(() => {
         if (document.visibilityState === 'visible') {
           checkSubscription();
         }
-      }, 30000);
+      }, 60000);
 
       return () => clearInterval(interval);
     } else {
