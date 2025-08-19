@@ -337,16 +337,10 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       }
     } catch (error) {
       console.error('Subscription error:', error);
-      alert(`Subscription failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
->>>>>>> Stashed changes
       setLoading(false);
     }
   };
 
-<<<<<<< Updated upstream
-  const initializeRazorpay = (orderData: any) => {
-    console.log('Initializing Razorpay with order data:', orderData);
-=======
   const initializeRazorpay = async (orderData: {
     keyId: string;
     amount: number;
@@ -371,7 +365,6 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
     }
     
     setLoadingState('processing-payment');
->>>>>>> Stashed changes
     
     const options = {
       key: orderData.keyId,
@@ -381,13 +374,9 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       description: `Pro Plan - ${orderData.planType === 'yearly' ? 'Yearly' : 'Monthly'}`,
       order_id: orderData.orderId,
       prefill: {
-        name: user?.user_metadata?.full_name || user?.email?.split('@')[0],
+        name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
         email: orderData.userEmail,
-<<<<<<< Updated upstream
-        name: user?.user_metadata?.full_name || '',
-=======
         contact: ""
->>>>>>> Stashed changes
       },
       theme: {
         color: '#3B82F6'
@@ -445,15 +434,6 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       },
       handler: async function(response: RazorpayResponse) {
         console.log('Payment successful:', response);
-<<<<<<< Updated upstream
-        toast.success('Payment successful! Welcome to InvoMitra Pro!');
-        // Refresh subscription status
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1000);
-        onClose();
-        setLoading(false);
-=======
         
         // Validate response contains all required fields
         if (!response.razorpay_payment_id || !response.razorpay_order_id || !response.razorpay_signature) {
@@ -546,15 +526,12 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       modal: {
         ondismiss: function() {
           console.log('Payment dismissed');
-<<<<<<< Updated upstream
-          toast.info('Payment cancelled');
-=======
+
           toast({
             title: "Payment Cancelled",
             description: "You cancelled the payment process",
             variant: "default"
           });
->>>>>>> Stashed changes
           setLoading(false);
           setLoadingState('idle');
         },
@@ -592,7 +569,8 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
       console.error('Error opening Razorpay:', error);
       toast.error('Failed to open payment gateway. Please try again.');
       setLoading(false);
-=======
+    }
+    
     console.log('Razorpay options:', options);
     
     try {
@@ -834,10 +812,6 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
               disabled={loadingState !== 'idle'}
             >
 <<<<<<< Updated upstream
-              {loading ? 'Loading Payment...' : user ? 
-                `Pay ${isYearly ? '₹999/year' : '₹99/month'}` : 
-                `Sign Up & Pay ${isYearly ? '₹999/year' : '₹99/month'}`
-=======
               {loadingState !== 'idle' ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -848,7 +822,6 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
               ) : user ? 
                 `Subscribe ${isYearly ? 'Yearly ₹999' : 'Monthly ₹99'}` : 
                 `Sign Up & Subscribe ${isYearly ? 'Yearly' : 'Monthly'}`
->>>>>>> Stashed changes
               }
             </Button>
             
