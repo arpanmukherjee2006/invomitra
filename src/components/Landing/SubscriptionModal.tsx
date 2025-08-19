@@ -298,21 +298,21 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
           // Add a small delay to ensure Razorpay is fully initialized
           setTimeout(() => {
             try {
-      initializeRazorpay(data);
-    } catch (error) {
-      console.error('Failed to initialize Razorpay after script load:', error);
-      toast({
-        title: "Payment Gateway Error",
-        description: "Failed to initialize payment system. Please try again later.",
-        variant: "destructive"
-      });
-      setPaymentError({
-        isVisible: true,
-        type: 'general'
-      });
-      setLoading(false);
-      setLoadingState('idle');
-    }
+              initializeRazorpay(data);
+            } catch (error) {
+              console.error('Failed to initialize Razorpay after script load:', error);
+              toast({
+                title: "Payment Gateway Error",
+                description: "Failed to initialize payment system. Please try again later.",
+                variant: "destructive"
+              });
+              setPaymentError({
+                isVisible: true,
+                type: 'general'
+              });
+              setLoading(false);
+              setLoadingState('idle');
+            }
           }, 500);
         };
         script.onerror = () => {
