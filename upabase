@@ -1,0 +1,10 @@
+warning: in the working copy of 'src/components/Landing/SubscriptionModal.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/integrations/supabase/types.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/types/razorpay.d.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'supabase/functions/check-subscription/index.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'supabase/functions/customer-portal/index.ts', LF will be replaced by CRLF the next time Git touches it
+src/components/Landing/SubscriptionModal.tsx
+src/integrations/supabase/types.ts
+src/types/razorpay.d.ts
+supabase/functions/check-subscription/index.ts
+supabase/functions/customer-portal/index.ts

@@ -24,6 +24,7 @@ serve(async (req) => {
   );
 
   try {
+<<<<<<< Updated upstream
     logStep("Function started");
 
     const authHeader = req.headers.get("Authorization");
@@ -39,6 +40,36 @@ serve(async (req) => {
 
     const { priceType } = await req.json();
     logStep("Request body parsed", { priceType });
+=======
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Missing Authorization header");
+    }
+    
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError) {
+      console.error("Auth error:", authError);
+      throw new Error(`Authentication failed: ${authError.message}`);
+    }
+    
+    const user = data.user;
+    if (!user?.email) {
+      throw new Error("User not authenticated or email not available");
+    }
+
+    console.log("User authenticated:", user.email);
+
+    const requestBody = await req.json();
+    const { priceType } = requestBody;
+    
+    if (!priceType || !['monthly', 'yearly'].includes(priceType)) {
+      throw new Error("Invalid or missing priceType. Must be 'monthly' or 'yearly'");
+    }
+    
+    console.log("Price type:", priceType);
+>>>>>>> Stashed changes
 
     // Get Razorpay credentials from environment
     const razorpayKeyId = Deno.env.get("RAZORPAY_KEY_ID");
@@ -86,7 +117,32 @@ serve(async (req) => {
 
     if (!razorpayResponse.ok) {
       const errorData = await razorpayResponse.text();
+<<<<<<< Updated upstream
       logStep("ERROR: Razorpay API failed", { status: razorpayResponse.status, error: errorData });
+=======
+      console.error("Razorpay order creation error:", {
+        status: razorpayResponse.status,
+        statusText: razorpayResponse.statusText,
+        body: errorData,
+      });
+      
+      // Try to parse the error for more specific information
+      try {
+        const errorJson = JSON.parse(errorData);
+        if (errorJson.error) {
+          // Check for specific error types
+          if (errorJson.error.code === 'BAD_REQUEST_ERROR') {
+            throw new Error(`Invalid payment request: ${errorJson.error.description}`);
+          } else if (errorJson.error.code === 'GATEWAY_ERROR') {
+            throw new Error(`Payment gateway error: ${errorJson.error.description}`);
+          }
+        }
+      } catch (parseError) {
+        // If parsing fails, continue with generic error
+        console.error("Error parsing Razorpay error response:", parseError);
+      }
+      
+>>>>>>> Stashed changes
       throw new Error(`Razorpay API error: ${errorData}`);
     }
 

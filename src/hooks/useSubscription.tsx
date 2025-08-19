@@ -40,6 +40,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         .eq('user_id', user.id)
         .maybeSingle();
 
+<<<<<<< Updated upstream
       if (localError) {
         console.error('Local subscription check error:', localError);
         setSubscribed(false);
@@ -63,6 +64,28 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         setSubscribed(isActive);
         setSubscriptionTier(localData.subscription_tier);
         setSubscriptionEnd(localData.subscription_end);
+=======
+      if (error) {
+        console.error('Subscription check error:', error);
+        // Log more details about the error
+        if (error.message) console.error('Error message:', error.message);
+        if (error.context) console.error('Error context:', error.context);
+        if (error.stack) console.error('Error stack:', error.stack);
+        
+        // Check if it's a temporary issue that might resolve with a retry
+        const isNetworkError = error.message?.includes('Network Error') || 
+                              error.message?.includes('Failed to fetch');
+        
+        if (isNetworkError) {
+          console.log('Network error detected, will retry on next interval');
+          // Don't update subscription state on network errors to avoid flickering UI
+        } else {
+          // For other errors, reset subscription state
+          setSubscribed(false);
+          setSubscriptionTier(null);
+          setSubscriptionEnd(null);
+        }
+>>>>>>> Stashed changes
       } else {
         // No local data, create initial record
         console.log('No local subscription data, creating initial record');

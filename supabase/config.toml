@@ -1,54 +1,7 @@
 project_id = "yoschxpwbgvuxdgewhse"
 
-[api]
-enabled = true
-port = 54321
-schemas = ["public", "graphql_public"]
-extra_search_path = ["public", "extensions"]
-max_rows = 1000
-
-[auth]
-enabled = true
-port = 54324
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
-jwt_expiry = 3600
-enable_signup = true
-enable_anonymous_sign_ins = false
-
-[db]
-port = 54322
-
-[[db.pooler.connection_string]]
-database_host = "localhost"
-database_port = 54322
-database_name = "postgres"
-
-[realtime]
-enabled = true
-port = 54323
-
-[studio]
-enabled = true
-port = 54323
-
-[inbucket]
-enabled = true
-port = 54324
-smtp_port = 54325
-pop3_port = 54326
-
-[storage]
-enabled = true
-port = 54321
-image_transformation = {"enabled": true}
-
-[edge_runtime]
-enabled = true
-port = 54321
-
-[analytics]
-enabled = false
+# Minimal config for deploying Edge Functions
+# Local service ports and pooler settings removed to satisfy CLI schema
 
 [functions.create-checkout]
 verify_jwt = true
@@ -58,3 +11,7 @@ verify_jwt = true
 
 [functions.customer-portal]
 verify_jwt = true
+
+# Webhooks should not require JWT verification
+[functions.razorpay-webhook]
+verify_jwt = false

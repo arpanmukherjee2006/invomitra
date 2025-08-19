@@ -2,6 +2,7 @@ import { ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import RazorpayTest from '@/components/Landing/RazorpayTest';
 
 const ContactUs = () => {
   return (
@@ -137,6 +138,16 @@ const ContactUs = () => {
                   </p>
                 </a>
               </div>
+            </CardContent>
+          </Card>
+          
+          {/* Temporary Razorpay Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Debug: Razorpay Configuration</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RazorpayTest />
             </CardContent>
           </Card>
         </div>
