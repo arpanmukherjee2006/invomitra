@@ -69,11 +69,16 @@ serve(async (req) => {
     
     logStep("Price calculated", { priceType, amount, currency });
 
+    // Create shorter receipt ID (max 40 chars) - using timestamp and random string
+    const timestamp = Date.now().toString().slice(-8); // Last 8 digits of timestamp
+    const randomId = Math.random().toString(36).substring(2, 8); // 6 char random string
+    const shortReceipt = `inv_${timestamp}_${randomId}`; // inv_12345678_abc123 (max 19 chars)
+
     // Create Razorpay order
     const orderData = {
       amount: amount,
       currency: currency,
-      receipt: `invomitra_${user.id}_${Date.now()}`,
+      receipt: shortReceipt,
       notes: {
         user_id: user.id,
         user_email: user.email,
