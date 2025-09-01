@@ -73,6 +73,8 @@ serve(async (req) => {
     const timestamp = Date.now().toString().slice(-8); // Last 8 digits of timestamp
     const randomId = Math.random().toString(36).substring(2, 8); // 6 char random string
     const shortReceipt = `inv_${timestamp}_${randomId}`; // inv_12345678_abc123 (max 19 chars)
+    
+    logStep("Generated receipt", { receipt: shortReceipt, length: shortReceipt.length });
 
     // Create Razorpay order
     const orderData = {
@@ -86,6 +88,11 @@ serve(async (req) => {
         product: "InvoMitra Pro Plan"
       }
     };
+
+    logStep("Final order data being sent to Razorpay", { 
+      ...orderData, 
+      receiptLength: orderData.receipt.length 
+    });
 
     const auth = btoa(`${razorpayKeyId}:${razorpayKeySecret}`);
     logStep("Creating Razorpay order", { orderData });
