@@ -44,8 +44,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         console.error('Local subscription check error:', localError);
         // Log more details about the error
         if (localError.message) console.error('Error message:', localError.message);
-        if (localError.context) console.error('Error context:', localError.context);
-        if (localError.stack) console.error('Error stack:', localError.stack);
+        if (localError.details) console.error('Error details:', localError.details);
+        if (localError.hint) console.error('Error hint:', localError.hint);
         
         // Check if it's a temporary issue that might resolve with a retry
         const isNetworkError = localError.message?.includes('Network Error') || 
