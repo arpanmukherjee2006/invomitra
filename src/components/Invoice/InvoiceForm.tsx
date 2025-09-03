@@ -82,6 +82,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
     sgst_rate: 9,
     igst_rate: 18,
     payment_qr: '', // For payment QR code
+    payment_amount: 0, // Amount for QR code payment
   });
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
@@ -155,6 +156,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
         sgst_rate: initialInvoice.sgst_rate || 9,
         igst_rate: initialInvoice.igst_rate || 18,
         payment_qr: initialInvoice.payment_qr || '',
+        payment_amount: initialInvoice.payment_amount || 0,
       });
 
       // Set company info from client data
@@ -240,6 +242,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
           sgst_rate: 9,
           igst_rate: 18,
           payment_qr: '',
+          payment_amount: 0,
         });
 
         setSelectedClientId('1');
@@ -840,44 +843,61 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="payment_qr">Payment QR Code</Label>
-                  <Input
-                    id="payment_qr"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                          setInvoiceData(prev => ({ ...prev, payment_qr: e.target?.result as string }));
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="cursor-pointer"
-                  />
-                  {invoiceData.payment_qr && (
-                    <div className="mt-2">
-                      <img 
-                        src={invoiceData.payment_qr} 
-                        alt="Payment QR Code" 
-                        className="w-24 h-24 object-contain border rounded"
-                      />
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setInvoiceData(prev => ({ ...prev, payment_qr: '' }))}
-                        className="mt-1"
-                      >
-                        Remove QR
-                      </Button>
-                    </div>
-                  )}
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Upload a QR code for payment (UPI, bank details, etc.)
-                  </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="payment_qr">Payment QR Code</Label>
+                    <Input
+                      id="payment_qr"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            setInvoiceData(prev => ({ ...prev, payment_qr: e.target?.result as string }));
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="cursor-pointer"
+                    />
+                    {invoiceData.payment_qr && (
+                      <div className="mt-2">
+                        <img 
+                          src={invoiceData.payment_qr} 
+                          alt="Payment QR Code" 
+                          className="w-24 h-24 object-contain border rounded"
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setInvoiceData(prev => ({ ...prev, payment_qr: '' }))}
+                          className="mt-1"
+                        >
+                          Remove QR
+                        </Button>
+                      </div>
+                    )}
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Upload a QR code for payment (UPI, bank details, etc.)
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="payment_amount">Payment Amount</Label>
+                    <Input
+                      id="payment_amount"
+                      type="number"
+                      value={invoiceData.payment_amount}
+                      onChange={(e) => setInvoiceData(prev => ({ ...prev, payment_amount: parseFloat(e.target.value) || 0 }))}
+                      placeholder="Enter amount for QR payment"
+                      min="0"
+                      step="0.01"
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Amount that will be shown when QR is scanned
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1206,25 +1226,40 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                  </div>
                )}
 
-               {/* Payment QR Code */}
-               {invoiceData.payment_qr && (
-                 <div className="border-t pt-6">
-                   <div className="flex items-start justify-between">
-                     <div>
-                       <h3 className="text-lg font-semibold mb-2">Payment Information:</h3>
-                       <p className="text-gray-600 mb-4">Scan the QR code below to make payment</p>
-                     </div>
-                     <div className="text-center">
-                       <img 
-                         src={invoiceData.payment_qr} 
-                         alt="Payment QR Code" 
-                         className="w-32 h-32 object-contain border rounded"
-                       />
-                       <p className="text-sm text-gray-500 mt-2">Scan to Pay</p>
-                     </div>
-                   </div>
-                 </div>
-               )}
+                {/* Payment QR Code */}
+                {invoiceData.payment_qr && (
+                  <div className="border-t pt-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Payment Information:</h3>
+                        <p className="text-gray-600 mb-2">Scan the QR code below to make payment</p>
+                        {invoiceData.payment_amount > 0 && (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                            <p className="text-green-800 font-semibold">
+                              Payment Amount: {getCurrencySymbol()}{invoiceData.payment_amount.toFixed(2)}
+                            </p>
+                            <p className="text-green-600 text-sm">
+                              This amount will be displayed when the QR is scanned
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <img 
+                          src={invoiceData.payment_qr} 
+                          alt="Payment QR Code" 
+                          className="w-32 h-32 object-contain border rounded"
+                        />
+                        <p className="text-sm text-gray-500 mt-2">Scan to Pay</p>
+                        {invoiceData.payment_amount > 0 && (
+                          <p className="text-lg font-bold text-green-700 mt-1">
+                            {getCurrencySymbol()}{invoiceData.payment_amount.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
             <div className="flex justify-end gap-4 mt-4">
               <Button variant="outline" onClick={() => setShowPreview(false)}>
