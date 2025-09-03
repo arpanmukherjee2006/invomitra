@@ -146,6 +146,7 @@ export type Database = {
           igst_rate: number | null
           invoice_number: string
           notes: string | null
+          payment_qr: string | null
           place_of_supply: string | null
           sgst_amount: number | null
           sgst_rate: number | null
@@ -178,6 +179,7 @@ export type Database = {
           igst_rate?: number | null
           invoice_number: string
           notes?: string | null
+          payment_qr?: string | null
           place_of_supply?: string | null
           sgst_amount?: number | null
           sgst_rate?: number | null
@@ -210,6 +212,7 @@ export type Database = {
           igst_rate?: number | null
           invoice_number?: string
           notes?: string | null
+          payment_qr?: string | null
           place_of_supply?: string | null
           sgst_amount?: number | null
           sgst_rate?: number | null

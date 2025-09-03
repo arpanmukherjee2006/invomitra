@@ -448,6 +448,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
         status: 'pending',
         notes: invoiceData.notes,
         currency: invoiceData.currency,
+        payment_qr: invoiceData.payment_qr,
       };
 
       let savedInvoice;
