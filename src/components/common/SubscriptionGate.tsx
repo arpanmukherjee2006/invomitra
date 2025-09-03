@@ -11,47 +11,24 @@ interface SubscriptionGateProps {
 
 const SubscriptionGate = ({ children, feature = "this feature" }: SubscriptionGateProps) => {
   const { user } = useAuth();
-  const { subscribed, loading } = useSubscription();
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
 
   const handleFeatureAccess = () => {
-    console.log('SubscriptionGate - handleFeatureAccess called', { user: !!user, subscribed, loading });
-    
     if (!user) {
-      console.log('SubscriptionGate - No user, redirecting to /auth');
       navigate('/auth');
       return;
     }
-
-    if (!subscribed) {
-      console.log('SubscriptionGate - User exists but not subscribed, showing modal');
-      setShowModal(true);
-      return;
-    }
-
-    console.log('SubscriptionGate - User subscribed, allowing access');
+    
+    // Temporarily bypass subscription check - redirect directly to dashboard
+    navigate('/dashboard');
   };
 
-  if (loading) {
+  // Temporarily bypass subscription loading and checks
+  if (!user) {
     return (
-      <div className="opacity-50 pointer-events-none">
+      <div onClick={handleFeatureAccess} className="cursor-pointer inline-block">
         {children}
       </div>
-    );
-  }
-
-  if (!user || !subscribed) {
-    return (
-      <>
-        <div onClick={handleFeatureAccess} className="cursor-pointer inline-block">
-          {children}
-        </div>
-        <SubscriptionModal 
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-        />
-      </>
     );
   }
 
