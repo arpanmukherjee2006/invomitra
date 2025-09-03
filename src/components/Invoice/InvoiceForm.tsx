@@ -81,6 +81,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
     cgst_rate: 9,
     sgst_rate: 9,
     igst_rate: 18,
+    payment_qr: '', // For payment QR code
   });
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
@@ -153,6 +154,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
         cgst_rate: initialInvoice.cgst_rate || 9,
         sgst_rate: initialInvoice.sgst_rate || 9,
         igst_rate: initialInvoice.igst_rate || 18,
+        payment_qr: initialInvoice.payment_qr || '',
       });
 
       // Set company info from client data
@@ -237,6 +239,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
           cgst_rate: 9,
           sgst_rate: 9,
           igst_rate: 18,
+          payment_qr: '',
         });
 
         setSelectedClientId('1');
@@ -829,10 +832,51 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
                     id="notes"
-                    placeholder="Additional notes..."
                     value={invoiceData.notes}
                     onChange={(e) => setInvoiceData(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="Payment terms, thank you note, etc."
+                    rows={3}
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="payment_qr">Payment QR Code</Label>
+                  <Input
+                    id="payment_qr"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          setInvoiceData(prev => ({ ...prev, payment_qr: e.target?.result as string }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  />
+                  {invoiceData.payment_qr && (
+                    <div className="mt-2">
+                      <img 
+                        src={invoiceData.payment_qr} 
+                        alt="Payment QR Code" 
+                        className="w-24 h-24 object-contain border rounded"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setInvoiceData(prev => ({ ...prev, payment_qr: '' }))}
+                        className="mt-1"
+                      >
+                        Remove QR
+                      </Button>
+                    </div>
+                  )}
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Upload a QR code for payment (UPI, bank details, etc.)
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -1153,13 +1197,33 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                 </div>
               </div>
 
-              {/* Notes */}
-              {invoiceData.notes && (
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-2">Notes:</h3>
-                  <p className="text-gray-600 whitespace-pre-line">{invoiceData.notes}</p>
-                </div>
-              )}
+               {/* Notes */}
+               {invoiceData.notes && (
+                 <div className="border-t pt-6">
+                   <h3 className="text-lg font-semibold mb-2">Notes:</h3>
+                   <p className="text-gray-600 whitespace-pre-line">{invoiceData.notes}</p>
+                 </div>
+               )}
+
+               {/* Payment QR Code */}
+               {invoiceData.payment_qr && (
+                 <div className="border-t pt-6">
+                   <div className="flex items-start justify-between">
+                     <div>
+                       <h3 className="text-lg font-semibold mb-2">Payment Information:</h3>
+                       <p className="text-gray-600 mb-4">Scan the QR code below to make payment</p>
+                     </div>
+                     <div className="text-center">
+                       <img 
+                         src={invoiceData.payment_qr} 
+                         alt="Payment QR Code" 
+                         className="w-32 h-32 object-contain border rounded"
+                       />
+                       <p className="text-sm text-gray-500 mt-2">Scan to Pay</p>
+                     </div>
+                   </div>
+                 </div>
+               )}
             </div>
             <div className="flex justify-end gap-4 mt-4">
               <Button variant="outline" onClick={() => setShowPreview(false)}>

@@ -497,33 +497,21 @@ const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
           </div>
 
           <div className="space-y-3">
+            {/* Payment temporarily disabled for testing */}
             <Button 
               size="lg" 
               className="w-full" 
-              onClick={() => handleSubscribe(isYearly ? 'yearly' : 'monthly')}
-              disabled={loadingState !== 'idle'}
+              disabled={true}
             >
-              {loadingState !== 'idle' ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {loadingState === 'creating-order' ? 'Creating order...' : 
-                   loadingState === 'loading-script' ? 'Loading payment...' : 
-                   'Processing payment...'}
-                </>
-              ) : user ? 
-                `Subscribe ${isYearly ? 'Yearly ₹999' : 'Monthly ₹99'}` : 
-                `Sign Up & Subscribe ${isYearly ? 'Yearly' : 'Monthly'}`
-              }
+              Payment Gateway Under Maintenance
             </Button>
             
-            {!user && (
-              <p className="text-xs text-center text-muted-foreground">
-                You'll need to sign up first to start your subscription
-              </p>
-            )}
+            <p className="text-xs text-center text-muted-foreground">
+              Payment gateway is temporarily disabled for testing. All features are currently available for free.
+            </p>
             
             <div className="text-xs text-center text-muted-foreground">
-              Secure payment via Razorpay • Cancel anytime • No setup fees
+              Contact support if you need immediate access
             </div>
           </div>
         </div>
