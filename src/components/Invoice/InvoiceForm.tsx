@@ -452,6 +452,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
         notes: invoiceData.notes,
         currency: invoiceData.currency,
         payment_qr: invoiceData.payment_qr,
+        payment_amount: invoiceData.payment_amount,
       };
 
       let savedInvoice;
