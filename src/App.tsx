@@ -18,10 +18,18 @@ import ContactUs from "./pages/ContactUs";
 import CancellationRefunds from "./pages/CancellationRefunds";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
         <SubscriptionProvider>
@@ -43,11 +51,12 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          </BrowserRouter>
-        </SubscriptionProvider>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </BrowserRouter>
+    </SubscriptionProvider>
+  </AuthProvider>
+</TooltipProvider>
+</QueryClientProvider>
+  );
+};
 
 export default App;
