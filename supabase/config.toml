@@ -12,9 +12,6 @@ verify_jwt = true
 [functions.customer-portal]
 verify_jwt = true
 
-[functions.send-invoice-email]
-verify_jwt = false
-
 # Webhooks should not require JWT verification
 [functions.razorpay-webhook]
 verify_jwt = false
