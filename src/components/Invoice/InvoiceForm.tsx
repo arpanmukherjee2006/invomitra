@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Plus, Trash2, Save, Download, Eye, Upload } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Download, Eye, Upload, Mail, MessageCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import html2canvas from 'html2canvas';
@@ -66,6 +66,8 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
 
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [emailForm, setEmailForm] = useState({ to: '', subject: '', message: '' });
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState('');
   
@@ -452,6 +454,101 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
       toast.error('Failed to generate PDF');
       console.error('PDF generation error:', error);
     }
+  };
+
+  const generatePDFBase64 = async (): Promise<string | null> => {
+    const element = document.getElementById('invoice-content');
+    if (!element) return null;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        logging: false,
+        useCORS: true
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      return pdf.output('datauristring').split(',')[1]; // Return base64 without data:application/pdf;base64,
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      return null;
+    }
+  };
+
+  const sendEmail = async () => {
+    if (!emailForm.to || !emailForm.subject) {
+      toast.error('Please fill in the email address and subject.');
+      return;
+    }
+
+    try {
+      const pdfBase64 = await generatePDFBase64();
+      if (!pdfBase64) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const defaultSubject = emailForm.subject || `Invoice ${invoiceData.invoice_number}`;
+      const defaultMessage = emailForm.message || `Please find attached the invoice ${invoiceData.invoice_number}.`;
+
+      const emailHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Invoice ${invoiceData.invoice_number}</h2>
+          <p>${defaultMessage}</p>
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin: 0 0 10px 0; color: #666;">Invoice Details:</h3>
+            <p style="margin: 5px 0;"><strong>Invoice Number:</strong> ${invoiceData.invoice_number}</p>
+            <p style="margin: 5px 0;"><strong>Date:</strong> ${invoiceData.date}</p>
+            <p style="margin: 5px 0;"><strong>Amount:</strong> ${getCurrencySymbol()}${calculateTotals().total.toFixed(2)}</p>
+          </div>
+          <p style="color: #666; font-size: 14px;">Thank you for your business!</p>
+        </div>
+      `;
+
+      const response = await supabase.functions.invoke('send-invoice-email', {
+        body: {
+          to: emailForm.to,
+          subject: defaultSubject,
+          html: emailHTML,
+          pdfBase64,
+          invoiceNumber: invoiceData.invoice_number
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      toast.success(`Invoice has been sent to ${emailForm.to}`);
+      setShowShareModal(false);
+      setEmailForm({ to: '', subject: '', message: '' });
+    } catch (error: any) {
+      console.error('Error sending email:', error);
+      toast.error(error.message || 'Failed to send email. Please try again.');
+    }
+  };
+
+  const shareOnWhatsApp = () => {
+    const { total } = calculateTotals();
+    const message = `Invoice ${invoiceData.invoice_number}\n\nAmount: ${getCurrencySymbol()}${total.toFixed(2)}\nDate: ${invoiceData.date}\n\nPlease find the attached invoice for your reference.`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const handleSave = async () => {
@@ -1307,10 +1404,83 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
               <Button variant="outline" onClick={() => setShowPreview(false)}>
                 Close
               </Button>
-              <Button onClick={downloadPDF} className="flex items-center gap-2">
+              <Button onClick={downloadPDF} variant="outline" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
                 Download PDF
               </Button>
+              <Button onClick={() => setShowShareModal(true)} className="flex items-center gap-2">
+                <Share2 className="h-4 w-4" />
+                Share Invoice
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Share Modal */}
+        <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Share Invoice</DialogTitle>
+              <DialogDescription>
+                Send invoice via email or share on WhatsApp
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Email Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Send via Email
+                </h4>
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder="Recipient email address"
+                    value={emailForm.to}
+                    onChange={(e) => setEmailForm(prev => ({ ...prev, to: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Subject (optional)"
+                    value={emailForm.subject}
+                    onChange={(e) => setEmailForm(prev => ({ ...prev, subject: e.target.value }))}
+                  />
+                  <textarea
+                    className="w-full min-h-[80px] px-3 py-2 text-sm border border-input bg-background rounded-md"
+                    placeholder="Message (optional)"
+                    value={emailForm.message}
+                    onChange={(e) => setEmailForm(prev => ({ ...prev, message: e.target.value }))}
+                  />
+                  <Button onClick={sendEmail} className="w-full">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Email
+                  </Button>
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              {/* WhatsApp Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Share on WhatsApp
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Opens WhatsApp with pre-filled message. You can attach the PDF manually.
+                </p>
+                <Button onClick={shareOnWhatsApp} variant="outline" className="w-full">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Open WhatsApp
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
