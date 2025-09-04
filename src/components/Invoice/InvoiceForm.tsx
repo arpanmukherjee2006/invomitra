@@ -81,8 +81,9 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
     cgst_rate: 9,
     sgst_rate: 9,
     igst_rate: 18,
-    payment_qr: '', // For payment QR code
+    payment_qr: '', // For generated payment QR code
     payment_amount: 0, // Amount for QR code payment
+    upi_id: '', // UPI ID for QR generation
   });
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
@@ -157,6 +158,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
         igst_rate: initialInvoice.igst_rate || 18,
         payment_qr: initialInvoice.payment_qr || '',
         payment_amount: initialInvoice.payment_amount || 0,
+        upi_id: initialInvoice.upi_id || '',
       });
 
       // Set company info from client data
@@ -243,6 +245,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
           igst_rate: 18,
           payment_qr: '',
           payment_amount: 0,
+          upi_id: '',
         });
 
         setSelectedClientId('1');
@@ -283,6 +286,43 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
     } catch (error: any) {
       toast.error('Failed to fetch invoice');
       navigate('/dashboard');
+    }
+  };
+
+  // Generate UPI QR Code
+  const generateUPIQR = async (upiId: string, amount: number) => {
+    if (!upiId || amount <= 0) {
+      return '';
+    }
+    
+    try {
+      const upiUrl = `upi://pay?pa=${upiId}&am=${amount}&cu=INR`;
+      const qrDataUrl = await QRCode.toDataURL(upiUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      return qrDataUrl;
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast.error('Failed to generate QR code');
+      return '';
+    }
+  };
+
+  // Handle UPI ID and amount changes
+  const handleUPIChange = async (field: 'upi_id' | 'payment_amount', value: string | number) => {
+    const updatedData = { ...invoiceData, [field]: value };
+    setInvoiceData(updatedData);
+    
+    if (updatedData.upi_id && updatedData.payment_amount > 0) {
+      const qrCode = await generateUPIQR(updatedData.upi_id, updatedData.payment_amount);
+      setInvoiceData(prev => ({ ...prev, payment_qr: qrCode }));
+    } else {
+      setInvoiceData(prev => ({ ...prev, payment_qr: '' }));
     }
   };
 
@@ -846,60 +886,60 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="payment_qr">Payment QR Code</Label>
+                    <Label htmlFor="upi_id">UPI ID</Label>
                     <Input
-                      id="payment_qr"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (e) => {
-                            setInvoiceData(prev => ({ ...prev, payment_qr: e.target?.result as string }));
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      className="cursor-pointer"
+                      id="upi_id"
+                      type="text"
+                      placeholder="Enter UPI ID (e.g. user@paytm)"
+                      value={invoiceData.upi_id || ''}
+                      onChange={(e) => handleUPIChange('upi_id', e.target.value)}
                     />
-                    {invoiceData.payment_qr && (
-                      <div className="mt-2">
-                        <img 
-                          src={invoiceData.payment_qr} 
-                          alt="Payment QR Code" 
-                          className="w-24 h-24 object-contain border rounded"
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setInvoiceData(prev => ({ ...prev, payment_qr: '' }))}
-                          className="mt-1"
-                        >
-                          Remove QR
-                        </Button>
-                      </div>
-                    )}
                     <p className="text-sm text-muted-foreground mt-1">
-                      Upload a QR code for payment (UPI, bank details, etc.)
+                      Your UPI ID for receiving payments
                     </p>
                   </div>
                   <div>
-                    <Label htmlFor="payment_amount">Payment Amount</Label>
+                    <Label htmlFor="payment_amount">Payment Amount (₹)</Label>
                     <Input
                       id="payment_amount"
                       type="number"
-                      value={invoiceData.payment_amount}
-                      onChange={(e) => setInvoiceData(prev => ({ ...prev, payment_amount: parseFloat(e.target.value) || 0 }))}
-                      placeholder="Enter amount for QR payment"
+                      placeholder="Enter amount"
+                      value={invoiceData.payment_amount || ''}
+                      onChange={(e) => handleUPIChange('payment_amount', parseFloat(e.target.value) || 0)}
                       min="0"
                       step="0.01"
                     />
                     <p className="text-sm text-muted-foreground mt-1">
-                      Amount that will be shown when QR is scanned
+                      Amount that will be pre-filled when QR is scanned
                     </p>
                   </div>
                 </div>
+                
+                {invoiceData.payment_qr && (
+                  <div className="mt-4">
+                    <Label>Generated Payment QR Code</Label>
+                    <div className="mt-2 p-4 border rounded-lg bg-gray-50 text-center">
+                      <img 
+                        src={invoiceData.payment_qr} 
+                        alt="Payment QR Code" 
+                        className="w-32 h-32 mx-auto object-contain border rounded"
+                      />
+                      <p className="text-sm text-gray-600 mt-2">
+                        UPI: {invoiceData.upi_id} | Amount: ₹{invoiceData.payment_amount}
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setInvoiceData(prev => ({ ...prev, payment_qr: '', upi_id: '', payment_amount: 0 }));
+                        }}
+                        className="mt-2"
+                      >
+                        Clear Payment Info
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
