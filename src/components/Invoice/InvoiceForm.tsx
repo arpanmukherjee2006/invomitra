@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 
 interface InvoiceItem {
   id: string;
