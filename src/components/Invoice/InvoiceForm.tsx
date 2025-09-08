@@ -1177,93 +1177,99 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                 </div>
               )}
 
-              {/* Items Table - Desktop */}
-              <div className="border-t pt-4 sm:pt-6 hidden lg:block">
-                <table className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2">Description</th>
-                      <th className="text-center py-2 w-20">HSN/SAC</th>
-                      <th className="text-center py-2 w-12">Qty</th>
-                      <th className="text-right py-2 w-20">Rate</th>
-                      <th className="text-right py-2 w-20">Taxable</th>
-                      {invoiceData.gst_type === 'igst' ? (
-                        <th className="text-right py-2 w-16">IGST</th>
-                      ) : (
-                        <>
-                          <th className="text-right py-2 w-16">CGST</th>
-                          <th className="text-right py-2 w-16">SGST</th>
-                        </>
-                      )}
-                      <th className="text-right py-2 w-20">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="py-2">{item.description}</td>
-                        <td className="py-2 text-center text-xs">{item.hsn_sac_code}</td>
-                        <td className="py-2 text-center">{item.quantity}</td>
-                        <td className="py-2 text-right">{getCurrencySymbol()}{item.unit_price.toFixed(2)}</td>
-                        <td className="py-2 text-right">{getCurrencySymbol()}{item.taxable_amount.toFixed(2)}</td>
+              {/* Items Table - Desktop & Tablet */}
+              <div className="border-t pt-4 sm:pt-6 hidden md:block">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm min-w-[600px]">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 px-1">Description</th>
+                        <th className="text-center py-2 px-1 w-16 text-xs">HSN/SAC</th>
+                        <th className="text-center py-2 px-1 w-12 text-xs">Qty</th>
+                        <th className="text-right py-2 px-1 w-16 text-xs">Rate</th>
+                        <th className="text-right py-2 px-1 w-16 text-xs">Taxable</th>
                         {invoiceData.gst_type === 'igst' ? (
-                          <td className="py-2 text-right">{getCurrencySymbol()}{item.igst_amount.toFixed(2)}</td>
+                          <th className="text-right py-2 px-1 w-14 text-xs">IGST</th>
                         ) : (
                           <>
-                            <td className="py-2 text-right">{getCurrencySymbol()}{item.cgst_amount.toFixed(2)}</td>
-                            <td className="py-2 text-right">{getCurrencySymbol()}{item.sgst_amount.toFixed(2)}</td>
+                            <th className="text-right py-2 px-1 w-14 text-xs">CGST</th>
+                            <th className="text-right py-2 px-1 w-14 text-xs">SGST</th>
                           </>
                         )}
-                        <td className="py-2 text-right font-medium">{getCurrencySymbol()}{(item.total + item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</td>
+                        <th className="text-right py-2 px-1 w-16 text-xs">Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {items.map((item, index) => (
+                        <tr key={index} className="border-b">
+                          <td className="py-2 px-1 text-sm">{item.description}</td>
+                          <td className="py-2 px-1 text-center text-xs">{item.hsn_sac_code}</td>
+                          <td className="py-2 px-1 text-center text-xs">{item.quantity}</td>
+                          <td className="py-2 px-1 text-right text-xs">{getCurrencySymbol()}{item.unit_price.toFixed(2)}</td>
+                          <td className="py-2 px-1 text-right text-xs">{getCurrencySymbol()}{item.taxable_amount.toFixed(2)}</td>
+                          {invoiceData.gst_type === 'igst' ? (
+                            <td className="py-2 px-1 text-right text-xs">{getCurrencySymbol()}{item.igst_amount.toFixed(2)}</td>
+                          ) : (
+                            <>
+                              <td className="py-2 px-1 text-right text-xs">{getCurrencySymbol()}{item.cgst_amount.toFixed(2)}</td>
+                              <td className="py-2 px-1 text-right text-xs">{getCurrencySymbol()}{item.sgst_amount.toFixed(2)}</td>
+                            </>
+                          )}
+                          <td className="py-2 px-1 text-right font-medium text-xs">{getCurrencySymbol()}{(item.total + item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              {/* Items Cards - Mobile & Tablet */}
-              <div className="border-t pt-4 sm:pt-6 lg:hidden">
-                <div className="space-y-4">
+              {/* Items Cards - Mobile Only */}
+              <div className="border-t pt-4 md:hidden">
+                <div className="space-y-3">
                   {items.map((item, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-3 sm:p-4 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium text-sm sm:text-base">{item.description}</h4>
-                        <span className="text-xs sm:text-sm text-gray-500">HSN: {item.hsn_sac_code}</span>
+                    <div key={index} className="border border-gray-200 rounded-lg p-3 space-y-3 bg-gray-50">
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className="font-medium text-sm flex-1">{item.description}</h4>
+                        {item.hsn_sac_code && (
+                          <span className="text-xs text-gray-500 shrink-0">HSN: {item.hsn_sac_code}</span>
+                        )}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
+                      
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Qty:</span>
-                          <span>{item.quantity}</span>
+                          <span className="text-gray-600">Quantity:</span>
+                          <span className="font-medium">{item.quantity}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Rate:</span>
-                          <span>{getCurrencySymbol()}{item.unit_price.toFixed(2)}</span>
+                          <span className="font-medium">{getCurrencySymbol()}{item.unit_price.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Taxable:</span>
-                          <span>{getCurrencySymbol()}{item.taxable_amount.toFixed(2)}</span>
+                          <span className="font-medium">{getCurrencySymbol()}{item.taxable_amount.toFixed(2)}</span>
                         </div>
                         {invoiceData.gst_type === 'igst' ? (
                           <div className="flex justify-between">
-                            <span className="text-gray-600">IGST:</span>
-                            <span>{getCurrencySymbol()}{item.igst_amount.toFixed(2)}</span>
+                            <span className="text-gray-600">IGST ({item.igst_rate}%):</span>
+                            <span className="font-medium">{getCurrencySymbol()}{item.igst_amount.toFixed(2)}</span>
                           </div>
                         ) : (
                           <>
                             <div className="flex justify-between">
-                              <span className="text-gray-600">CGST:</span>
-                              <span>{getCurrencySymbol()}{item.cgst_amount.toFixed(2)}</span>
+                              <span className="text-gray-600">CGST ({item.cgst_rate}%):</span>
+                              <span className="font-medium">{getCurrencySymbol()}{item.cgst_amount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-gray-600">SGST:</span>
-                              <span>{getCurrencySymbol()}{item.sgst_amount.toFixed(2)}</span>
+                              <span className="text-gray-600">SGST ({item.sgst_rate}%):</span>
+                              <span className="font-medium">{getCurrencySymbol()}{item.sgst_amount.toFixed(2)}</span>
                             </div>
                           </>
                         )}
                       </div>
-                      <div className="border-t pt-2 flex justify-between font-medium text-sm sm:text-base">
-                        <span>Total:</span>
-                        <span>{getCurrencySymbol()}{(item.total + item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</span>
+                      
+                      <div className="border-t pt-2 flex justify-between items-center bg-white -mx-3 -mb-3 px-3 py-2 rounded-b-lg">
+                        <span className="font-semibold text-sm">Total Amount:</span>
+                        <span className="font-bold text-sm text-primary">{getCurrencySymbol()}{(item.total + item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</span>
                       </div>
                     </div>
                   ))}
