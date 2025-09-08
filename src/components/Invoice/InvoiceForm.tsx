@@ -1126,39 +1126,39 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
 
         {/* Invoice Preview Dialog */}
         <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto p-2 sm:p-6">
             <DialogHeader>
-              <DialogTitle>Invoice Preview</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">Invoice Preview</DialogTitle>
             </DialogHeader>
-            <div ref={invoiceRef} className="bg-white p-8 space-y-6 text-black">
+            <div ref={invoiceRef} className="bg-white p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 text-black">
               {/* Invoice Header */}
-              <div className="flex justify-between items-start">
-                <div>
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-6">
+                <div className="w-full sm:w-auto">
                   {companyInfo.logo && (
                     <img 
                       src={companyInfo.logo} 
                       alt="Company Logo" 
-                      className="h-16 w-auto mb-4 object-contain"
+                      className="h-12 sm:h-16 w-auto mb-3 sm:mb-4 object-contain"
                     />
                   )}
                   <div className="space-y-1">
-                    <h2 className="text-xl font-bold text-gray-900">{companyInfo.name || 'Your Company'}</h2>
-                    <p className="text-gray-600 whitespace-pre-line">{companyInfo.address}</p>
-                    <p className="text-gray-600">{companyInfo.email}</p>
-                    <p className="text-gray-600">{companyInfo.phone}</p>
-                    {companyInfo.gstin && <p className="text-gray-600">GSTIN: {companyInfo.gstin}</p>}
-                    {companyInfo.state_code && <p className="text-gray-600">State Code: {companyInfo.state_code}</p>}
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">{companyInfo.name || 'Your Company'}</h2>
+                    <p className="text-sm sm:text-base text-gray-600 whitespace-pre-line">{companyInfo.address}</p>
+                    <p className="text-sm sm:text-base text-gray-600">{companyInfo.email}</p>
+                    <p className="text-sm sm:text-base text-gray-600">{companyInfo.phone}</p>
+                    {companyInfo.gstin && <p className="text-sm sm:text-base text-gray-600">GSTIN: {companyInfo.gstin}</p>}
+                    {companyInfo.state_code && <p className="text-sm sm:text-base text-gray-600">State Code: {companyInfo.state_code}</p>}
                   </div>
                 </div>
-                <div className="text-right">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">TAX INVOICE</h1>
-                  <p className="text-gray-600">#{invoiceData.invoice_number || 'DRAFT'}</p>
-                  <p className="text-gray-600">Date: {invoiceData.date}</p>
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">TAX INVOICE</h1>
+                  <p className="text-sm sm:text-base text-gray-600">#{invoiceData.invoice_number || 'DRAFT'}</p>
+                  <p className="text-sm sm:text-base text-gray-600">Date: {invoiceData.date}</p>
                   {invoiceData.due_date && (
-                    <p className="text-gray-600">Due: {invoiceData.due_date}</p>
+                    <p className="text-sm sm:text-base text-gray-600">Due: {invoiceData.due_date}</p>
                   )}
                   {invoiceData.place_of_supply && (
-                    <p className="text-gray-600">Place of Supply: {invoiceData.place_of_supply}</p>
+                    <p className="text-sm sm:text-base text-gray-600">Place of Supply: {invoiceData.place_of_supply}</p>
                   )}
                 </div>
               </div>
@@ -1177,54 +1177,103 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                 </div>
               )}
 
-              {/* Items Table */}
-              <div className="border-t pt-6">
-                <table className="w-full border-collapse">
+              {/* Items Table - Desktop */}
+              <div className="border-t pt-4 sm:pt-6 hidden lg:block">
+                <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-2">Description</th>
-                      <th className="text-center py-2 w-24">HSN/SAC</th>
-                      <th className="text-center py-2 w-16">Qty</th>
-                      <th className="text-right py-2 w-24">Rate</th>
-                      <th className="text-right py-2 w-24">Taxable Value</th>
+                      <th className="text-center py-2 w-20">HSN/SAC</th>
+                      <th className="text-center py-2 w-12">Qty</th>
+                      <th className="text-right py-2 w-20">Rate</th>
+                      <th className="text-right py-2 w-20">Taxable</th>
                       {invoiceData.gst_type === 'igst' ? (
-                        <th className="text-right py-2 w-24">IGST</th>
+                        <th className="text-right py-2 w-16">IGST</th>
                       ) : (
                         <>
-                          <th className="text-right py-2 w-20">CGST</th>
-                          <th className="text-right py-2 w-20">SGST</th>
+                          <th className="text-right py-2 w-16">CGST</th>
+                          <th className="text-right py-2 w-16">SGST</th>
                         </>
                       )}
-                      <th className="text-right py-2 w-24">Total</th>
+                      <th className="text-right py-2 w-20">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item, index) => (
                       <tr key={index} className="border-b">
-                        <td className="py-3">{item.description}</td>
-                        <td className="py-3 text-center text-sm">{item.hsn_sac_code}</td>
-                        <td className="py-3 text-center">{item.quantity}</td>
-                        <td className="py-3 text-right">{getCurrencySymbol()}{item.unit_price.toFixed(2)}</td>
-                        <td className="py-3 text-right">{getCurrencySymbol()}{item.taxable_amount.toFixed(2)}</td>
+                        <td className="py-2">{item.description}</td>
+                        <td className="py-2 text-center text-xs">{item.hsn_sac_code}</td>
+                        <td className="py-2 text-center">{item.quantity}</td>
+                        <td className="py-2 text-right">{getCurrencySymbol()}{item.unit_price.toFixed(2)}</td>
+                        <td className="py-2 text-right">{getCurrencySymbol()}{item.taxable_amount.toFixed(2)}</td>
                         {invoiceData.gst_type === 'igst' ? (
-                          <td className="py-3 text-right">{getCurrencySymbol()}{item.igst_amount.toFixed(2)}</td>
+                          <td className="py-2 text-right">{getCurrencySymbol()}{item.igst_amount.toFixed(2)}</td>
                         ) : (
                           <>
-                            <td className="py-3 text-right">{getCurrencySymbol()}{item.cgst_amount.toFixed(2)}</td>
-                            <td className="py-3 text-right">{getCurrencySymbol()}{item.sgst_amount.toFixed(2)}</td>
+                            <td className="py-2 text-right">{getCurrencySymbol()}{item.cgst_amount.toFixed(2)}</td>
+                            <td className="py-2 text-right">{getCurrencySymbol()}{item.sgst_amount.toFixed(2)}</td>
                           </>
                         )}
-                        <td className="py-3 text-right font-medium">{getCurrencySymbol()}{(item.total + item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</td>
+                        <td className="py-2 text-right font-medium">{getCurrencySymbol()}{(item.total + item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
+              {/* Items Cards - Mobile & Tablet */}
+              <div className="border-t pt-4 sm:pt-6 lg:hidden">
+                <div className="space-y-4">
+                  {items.map((item, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-3 sm:p-4 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium text-sm sm:text-base">{item.description}</h4>
+                        <span className="text-xs sm:text-sm text-gray-500">HSN: {item.hsn_sac_code}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Qty:</span>
+                          <span>{item.quantity}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Rate:</span>
+                          <span>{getCurrencySymbol()}{item.unit_price.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Taxable:</span>
+                          <span>{getCurrencySymbol()}{item.taxable_amount.toFixed(2)}</span>
+                        </div>
+                        {invoiceData.gst_type === 'igst' ? (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">IGST:</span>
+                            <span>{getCurrencySymbol()}{item.igst_amount.toFixed(2)}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">CGST:</span>
+                              <span>{getCurrencySymbol()}{item.cgst_amount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">SGST:</span>
+                              <span>{getCurrencySymbol()}{item.sgst_amount.toFixed(2)}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <div className="border-t pt-2 flex justify-between font-medium text-sm sm:text-base">
+                        <span>Total:</span>
+                        <span>{getCurrencySymbol()}{(item.total + item.cgst_amount + item.sgst_amount + item.igst_amount).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Summary */}
-              <div className="border-t pt-6">
-                <div className="flex justify-end">
-                  <div className="w-64 space-y-2">
+              <div className="border-t pt-4 sm:pt-6">
+                <div className="flex justify-center sm:justify-end">
+                  <div className="w-full max-w-sm sm:w-64 space-y-2 text-sm sm:text-base">
                      <div className="flex justify-between">
                        <span>Taxable Amount:</span>
                        <span>{getCurrencySymbol()}{subtotal.toFixed(2)}</span>
@@ -1252,7 +1301,7 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                          <span>-{getCurrencySymbol()}{invoiceData.discount_amount.toFixed(2)}</span>
                        </div>
                      )}
-                     <div className="flex justify-between text-lg font-bold border-t pt-2">
+                     <div className="flex justify-between text-base sm:text-lg font-bold border-t pt-2">
                        <span>Total Amount:</span>
                        <span>{getCurrencySymbol()}{total.toFixed(2)}</span>
                      </div>
@@ -1262,39 +1311,39 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
 
                {/* Notes */}
                {invoiceData.notes && (
-                 <div className="border-t pt-6">
-                   <h3 className="text-lg font-semibold mb-2">Notes:</h3>
-                   <p className="text-gray-600 whitespace-pre-line">{invoiceData.notes}</p>
+                 <div className="border-t pt-4 sm:pt-6">
+                   <h3 className="text-base sm:text-lg font-semibold mb-2">Notes:</h3>
+                   <p className="text-sm sm:text-base text-gray-600 whitespace-pre-line">{invoiceData.notes}</p>
                  </div>
                )}
 
                 {/* Payment QR Code */}
                 {invoiceData.payment_qr && (
-                  <div className="border-t pt-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold mb-2">Payment Information:</h3>
-                        <p className="text-gray-600 mb-2">Scan the QR code below to make payment</p>
+                  <div className="border-t pt-4 sm:pt-6">
+                    <div className="flex flex-col sm:flex-row items-start gap-4 sm:justify-between">
+                      <div className="w-full sm:flex-1">
+                        <h3 className="text-base sm:text-lg font-semibold mb-2">Payment Information:</h3>
+                        <p className="text-sm sm:text-base text-gray-600 mb-2">Scan the QR code below to make payment</p>
                         {invoiceData.payment_amount > 0 && (
                           <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                            <p className="text-green-800 font-semibold">
+                            <p className="text-green-800 font-semibold text-sm sm:text-base">
                               Payment Amount: {getCurrencySymbol()}{invoiceData.payment_amount.toFixed(2)}
                             </p>
-                            <p className="text-green-600 text-sm">
+                            <p className="text-green-600 text-xs sm:text-sm">
                               This amount will be displayed when the QR is scanned
                             </p>
                           </div>
                         )}
                       </div>
-                      <div className="text-center">
+                      <div className="text-center w-full sm:w-auto flex-shrink-0">
                         <img 
                           src={invoiceData.payment_qr} 
                           alt="Payment QR Code" 
-                          className="w-32 h-32 object-contain border rounded"
+                          className="w-24 h-24 sm:w-32 sm:h-32 mx-auto object-contain border rounded"
                         />
-                        <p className="text-sm text-gray-500 mt-2">Scan to Pay</p>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-2">Scan to Pay</p>
                         {invoiceData.payment_amount > 0 && (
-                          <p className="text-lg font-bold text-green-700 mt-1">
+                          <p className="text-base sm:text-lg font-bold text-green-700 mt-1">
                             {getCurrencySymbol()}{invoiceData.payment_amount.toFixed(2)}
                           </p>
                         )}
@@ -1303,11 +1352,11 @@ const InvoiceForm = ({ initialInvoice }: InvoiceFormProps) => {
                   </div>
                 )}
             </div>
-            <div className="flex justify-end gap-4 mt-4">
-              <Button variant="outline" onClick={() => setShowPreview(false)}>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-4">
+              <Button variant="outline" onClick={() => setShowPreview(false)} className="w-full sm:w-auto">
                 Close
               </Button>
-              <Button onClick={downloadPDF} className="flex items-center gap-2">
+              <Button onClick={downloadPDF} className="flex items-center gap-2 w-full sm:w-auto">
                 <Download className="h-4 w-4" />
                 Download PDF
               </Button>
